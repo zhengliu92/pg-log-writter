@@ -19,7 +19,7 @@
 ## 安装
 
 ```bash
-go get github.com/zhengliu92/db-log-writer
+go get github.com/zhengliu92/pg-log-writter
 ```
 
 ## 使用方式
@@ -73,7 +73,7 @@ import (
     "time"
 
     "github.com/jackc/pgx/v5/pgxpool"
-    writer "github.com/zhengliu92/db-log-writer"
+    writer "github.com/zhengliu92/pg-log-writter"
 )
 
 func main() {
@@ -116,7 +116,7 @@ package main
 
 import (
     "time"
-    writer "github.com/zhengliu92/db-log-writer"
+    writer "github.com/zhengliu92/pg-log-writter"
 )
 
 func main() {
@@ -156,7 +156,7 @@ func main() {
 package main
 
 import (
-    writer "github.com/zhengliu92/db-log-writer"
+    writer "github.com/zhengliu92/pg-log-writter"
 )
 
 func main() {
@@ -174,7 +174,7 @@ func main() {
 ## 包结构
 
 ```
-github.com/zhengliu92/db-log-writer
+github.com/zhengliu92/pg-log-writter
 ├── types.go      # 类型定义和接口（DBExecutor, LogField, LogEntry, PostgresConfig, Writer）
 ├── postgres.go   # PostgresqlWriter 核心实现
 ├── console.go    # ConsoleWriter 核心实现

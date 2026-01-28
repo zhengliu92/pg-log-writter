@@ -1,4 +1,4 @@
-module github.com/zhengliu92/pg-log-writer
+module github.com/zhengliu92/pg-log-writter
 
 go 1.24.0
 
