@@ -12,11 +12,11 @@ type Writer interface {
 	Warn(content any, fields ...LogField)
 	Log(level string, content any, fields ...LogField)
 	// 格式化输出方法
-	Infof(format string, args ...any) FormatLogger
-	Errorf(format string, args ...any) FormatLogger
-	Debugf(format string, args ...any) FormatLogger
-	Warnf(format string, args ...any) FormatLogger
-	Logf(level string, format string, args ...any) FormatLogger
+	Infof(format string, args ...any)
+	Errorf(format string, args ...any)
+	Debugf(format string, args ...any)
+	Warnf(format string, args ...any)
+	Logf(level string, format string, args ...any)
 	Close() error
 }
 
@@ -68,46 +68,42 @@ func (m *MultiWriter) Warn(content any, fields ...LogField) {
 }
 
 // Infof 写入 info 级别格式化日志
-func (m *MultiWriter) Infof(format string, args ...any) FormatLogger {
+func (m *MultiWriter) Infof(format string, args ...any) {
 	content := fmt.Sprintf(format, args...)
-	return &multiFormatLogger{writers: m.writers, level: "info", content: content}
+	for _, w := range m.writers {
+		w.Info(content)
+	}
 }
 
 // Errorf 写入 error 级别格式化日志
-func (m *MultiWriter) Errorf(format string, args ...any) FormatLogger {
+func (m *MultiWriter) Errorf(format string, args ...any) {
 	content := fmt.Sprintf(format, args...)
-	return &multiFormatLogger{writers: m.writers, level: "error", content: content}
+	for _, w := range m.writers {
+		w.Error(content)
+	}
 }
 
 // Debugf 写入 debug 级别格式化日志
-func (m *MultiWriter) Debugf(format string, args ...any) FormatLogger {
+func (m *MultiWriter) Debugf(format string, args ...any) {
 	content := fmt.Sprintf(format, args...)
-	return &multiFormatLogger{writers: m.writers, level: "debug", content: content}
+	for _, w := range m.writers {
+		w.Debug(content)
+	}
 }
 
 // Warnf 写入 warn 级别格式化日志
-func (m *MultiWriter) Warnf(format string, args ...any) FormatLogger {
+func (m *MultiWriter) Warnf(format string, args ...any) {
 	content := fmt.Sprintf(format, args...)
-	return &multiFormatLogger{writers: m.writers, level: "warn", content: content}
+	for _, w := range m.writers {
+		w.Warn(content)
+	}
 }
 
 // Logf 写入格式化日志
-func (m *MultiWriter) Logf(level string, format string, args ...any) FormatLogger {
+func (m *MultiWriter) Logf(level string, format string, args ...any) {
 	content := fmt.Sprintf(format, args...)
-	return &multiFormatLogger{writers: m.writers, level: level, content: content}
-}
-
-// multiFormatLogger 用于 MultiWriter 的格式化日志链式调用
-type multiFormatLogger struct {
-	writers []Writer
-	level   string
-	content string
-}
-
-// Fields 添加字段并写入日志
-func (f *multiFormatLogger) Fields(fields ...LogField) {
-	for _, w := range f.writers {
-		w.Log(f.level, f.content, fields...)
+	for _, w := range m.writers {
+		w.Log(level, content)
 	}
 }
 

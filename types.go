@@ -22,11 +22,6 @@ type FieldAccessor interface {
 	GetValue() interface{}
 }
 
-// FormatLogger 格式化日志接口，用于链式调用添加字段
-type FormatLogger interface {
-	Fields(fields ...LogField)
-}
-
 // LogField 日志字段（自定义类型，不依赖 go-zero）
 type LogField struct {
 	Key   string
