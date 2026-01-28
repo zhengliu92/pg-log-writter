@@ -11,6 +11,12 @@ type Writer interface {
 	Debug(content any, fields ...LogField)
 	Warn(content any, fields ...LogField)
 	Log(level string, content any, fields ...LogField)
+	// 格式化输出方法
+	Infof(format string, args ...any) FormatLogger
+	Errorf(format string, args ...any) FormatLogger
+	Debugf(format string, args ...any) FormatLogger
+	Warnf(format string, args ...any) FormatLogger
+	Logf(level string, format string, args ...any) FormatLogger
 	Close() error
 }
 
@@ -58,6 +64,50 @@ func (m *MultiWriter) Debug(content any, fields ...LogField) {
 func (m *MultiWriter) Warn(content any, fields ...LogField) {
 	for _, w := range m.writers {
 		w.Warn(content, fields...)
+	}
+}
+
+// Infof 写入 info 级别格式化日志
+func (m *MultiWriter) Infof(format string, args ...any) FormatLogger {
+	content := fmt.Sprintf(format, args...)
+	return &multiFormatLogger{writers: m.writers, level: "info", content: content}
+}
+
+// Errorf 写入 error 级别格式化日志
+func (m *MultiWriter) Errorf(format string, args ...any) FormatLogger {
+	content := fmt.Sprintf(format, args...)
+	return &multiFormatLogger{writers: m.writers, level: "error", content: content}
+}
+
+// Debugf 写入 debug 级别格式化日志
+func (m *MultiWriter) Debugf(format string, args ...any) FormatLogger {
+	content := fmt.Sprintf(format, args...)
+	return &multiFormatLogger{writers: m.writers, level: "debug", content: content}
+}
+
+// Warnf 写入 warn 级别格式化日志
+func (m *MultiWriter) Warnf(format string, args ...any) FormatLogger {
+	content := fmt.Sprintf(format, args...)
+	return &multiFormatLogger{writers: m.writers, level: "warn", content: content}
+}
+
+// Logf 写入格式化日志
+func (m *MultiWriter) Logf(level string, format string, args ...any) FormatLogger {
+	content := fmt.Sprintf(format, args...)
+	return &multiFormatLogger{writers: m.writers, level: level, content: content}
+}
+
+// multiFormatLogger 用于 MultiWriter 的格式化日志链式调用
+type multiFormatLogger struct {
+	writers []Writer
+	level   string
+	content string
+}
+
+// Fields 添加字段并写入日志
+func (f *multiFormatLogger) Fields(fields ...LogField) {
+	for _, w := range f.writers {
+		w.Log(f.level, f.content, fields...)
 	}
 }
 

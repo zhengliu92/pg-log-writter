@@ -115,6 +115,44 @@ func (c *ConsoleWriter) Warn(content any, fields ...LogField) {
 	c.log("warn", content, GetCaller(2), fields...)
 }
 
+// Infof 写入 info 级别格式化日志
+func (c *ConsoleWriter) Infof(format string, args ...any) FormatLogger {
+	return &consoleFormatLogger{writer: c, level: "info", content: fmt.Sprintf(format, args...), caller: GetCaller(2)}
+}
+
+// Errorf 写入 error 级别格式化日志
+func (c *ConsoleWriter) Errorf(format string, args ...any) FormatLogger {
+	return &consoleFormatLogger{writer: c, level: "error", content: fmt.Sprintf(format, args...), caller: GetCaller(2)}
+}
+
+// Debugf 写入 debug 级别格式化日志
+func (c *ConsoleWriter) Debugf(format string, args ...any) FormatLogger {
+	return &consoleFormatLogger{writer: c, level: "debug", content: fmt.Sprintf(format, args...), caller: GetCaller(2)}
+}
+
+// Warnf 写入 warn 级别格式化日志
+func (c *ConsoleWriter) Warnf(format string, args ...any) FormatLogger {
+	return &consoleFormatLogger{writer: c, level: "warn", content: fmt.Sprintf(format, args...), caller: GetCaller(2)}
+}
+
+// Logf 写入格式化日志
+func (c *ConsoleWriter) Logf(level string, format string, args ...any) FormatLogger {
+	return &consoleFormatLogger{writer: c, level: level, content: fmt.Sprintf(format, args...), caller: GetCaller(2)}
+}
+
+// consoleFormatLogger 用于 ConsoleWriter 的格式化日志链式调用
+type consoleFormatLogger struct {
+	writer  *ConsoleWriter
+	level   string
+	content string
+	caller  string
+}
+
+// Fields 添加字段并写入日志
+func (f *consoleFormatLogger) Fields(fields ...LogField) {
+	f.writer.log(f.level, f.content, f.caller, fields...)
+}
+
 // Close 关闭写入器（控制台 Writer 不需要关闭）
 func (c *ConsoleWriter) Close() error {
 	return nil

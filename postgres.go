@@ -147,6 +147,43 @@ func (w *PostgresqlWriter) Warn(content any, fields ...LogField) {
 	w.Log("warn", content, fields...)
 }
 
+// Infof 写入 info 级别格式化日志
+func (w *PostgresqlWriter) Infof(format string, args ...any) FormatLogger {
+	return &postgresFormatLogger{writer: w, level: "info", content: fmt.Sprintf(format, args...)}
+}
+
+// Errorf 写入 error 级别格式化日志
+func (w *PostgresqlWriter) Errorf(format string, args ...any) FormatLogger {
+	return &postgresFormatLogger{writer: w, level: "error", content: fmt.Sprintf(format, args...)}
+}
+
+// Debugf 写入 debug 级别格式化日志
+func (w *PostgresqlWriter) Debugf(format string, args ...any) FormatLogger {
+	return &postgresFormatLogger{writer: w, level: "debug", content: fmt.Sprintf(format, args...)}
+}
+
+// Warnf 写入 warn 级别格式化日志
+func (w *PostgresqlWriter) Warnf(format string, args ...any) FormatLogger {
+	return &postgresFormatLogger{writer: w, level: "warn", content: fmt.Sprintf(format, args...)}
+}
+
+// Logf 写入格式化日志
+func (w *PostgresqlWriter) Logf(level string, format string, args ...any) FormatLogger {
+	return &postgresFormatLogger{writer: w, level: level, content: fmt.Sprintf(format, args...)}
+}
+
+// postgresFormatLogger 用于 PostgresqlWriter 的格式化日志链式调用
+type postgresFormatLogger struct {
+	writer  *PostgresqlWriter
+	level   string
+	content string
+}
+
+// Fields 添加字段并写入日志
+func (f *postgresFormatLogger) Fields(fields ...LogField) {
+	f.writer.Log(f.level, f.content, fields...)
+}
+
 // flushLoop 后台定时刷新协程
 func (w *PostgresqlWriter) flushLoop() {
 	defer w.wg.Done()
