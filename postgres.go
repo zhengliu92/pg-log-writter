@@ -59,8 +59,9 @@ func NewPostgresqlWriter(db DBExecutor, config *PostgresConfig) (*PostgresqlWrit
 	return w, nil
 }
 
-// ensureTable 确保日志表存在
+// ensureTable 确保日志表存在并执行必要的迁移
 func (w *PostgresqlWriter) ensureTable(ctx context.Context) error {
+	// 创建表（如果不存在）
 	query := fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			id BIGSERIAL PRIMARY KEY,
@@ -81,6 +82,24 @@ func (w *PostgresqlWriter) ensureTable(ctx context.Context) error {
 		return err
 	}
 
+	// 迁移：添加可能缺失的列（用于已存在的表）
+	migrations := []string{
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS log_type VARCHAR(20)`, w.tableName),
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS duration VARCHAR(50)`, w.tableName),
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS trace VARCHAR(100)`, w.tableName),
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS span VARCHAR(100)`, w.tableName),
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS user_id BIGINT`, w.tableName),
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS username VARCHAR(100)`, w.tableName),
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS fields JSONB`, w.tableName),
+	}
+
+	for _, migration := range migrations {
+		if err := w.db.Exec(ctx, migration); err != nil {
+			// 忽略迁移错误，继续执行（某些数据库可能不支持 IF NOT EXISTS）
+			continue
+		}
+	}
+
 	// 创建索引
 	indexes := []string{
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS idx_%s_timestamp ON %s(timestamp)`, w.tableName, w.tableName),
@@ -88,6 +107,7 @@ func (w *PostgresqlWriter) ensureTable(ctx context.Context) error {
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS idx_%s_trace ON %s(trace)`, w.tableName, w.tableName),
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS idx_%s_user_id ON %s(user_id)`, w.tableName, w.tableName),
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS idx_%s_log_type ON %s(log_type)`, w.tableName, w.tableName),
+		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS idx_%s_username ON %s(username)`, w.tableName, w.tableName),
 	}
 
 	for _, idx := range indexes {
