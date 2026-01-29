@@ -52,7 +52,8 @@ type LogEntry struct {
 	Duration  string                 `json:"duration,omitempty"`
 	Trace     string                 `json:"trace,omitempty"`
 	Span      string                 `json:"span,omitempty"`
-	UserID    *int64                 `json:"user_id,omitempty"` // 用户ID（可选）
+	UserID    *int64                 `json:"user_id,omitempty"`  // 用户ID（可选）
+	Username  string                 `json:"username,omitempty"` // 用户名（可选）
 	Fields    map[string]interface{} `json:"fields,omitempty"`
 }
 

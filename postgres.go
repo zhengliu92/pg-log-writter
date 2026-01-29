@@ -72,6 +72,7 @@ func (w *PostgresqlWriter) ensureTable(ctx context.Context) error {
 			trace VARCHAR(100),
 			span VARCHAR(100),
 			user_id BIGINT,
+			username VARCHAR(100),
 			fields JSONB
 		)
 	`, w.tableName)
@@ -112,7 +113,7 @@ func (w *PostgresqlWriter) AddEntry(entry LogEntry) {
 
 // Log 写入日志（核心方法）
 func (w *PostgresqlWriter) Log(level string, content any, fields ...LogField) {
-	trace, span, duration, logType, userID := extractFields(fields)
+	trace, span, duration, logType, userID, username := extractFields(fields)
 	entry := LogEntry{
 		Timestamp: time.Now().Format(time.RFC3339),
 		Level:     level,
@@ -122,6 +123,7 @@ func (w *PostgresqlWriter) Log(level string, content any, fields ...LogField) {
 		Trace:     trace,
 		Span:      span,
 		UserID:    userID,
+		Username:  username,
 		Fields:    convertLogFields(fields),
 	}
 	w.AddEntry(entry)
@@ -218,8 +220,8 @@ func (w *PostgresqlWriter) writeEntries(entries []LogEntry) {
 	for _, entry := range entries {
 		fieldsJSON, _ := json.Marshal(entry.Fields)
 		query := fmt.Sprintf(`
-			INSERT INTO %s (timestamp, level, content, log_type, duration, trace, span, user_id, fields)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			INSERT INTO %s (timestamp, level, content, log_type, duration, trace, span, user_id, username, fields)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		`, w.tableName)
 
 		ts, err := time.Parse(time.RFC3339, entry.Timestamp)
@@ -236,6 +238,7 @@ func (w *PostgresqlWriter) writeEntries(entries []LogEntry) {
 			entry.Trace,
 			entry.Span,
 			entry.UserID,
+			entry.Username,
 			fieldsJSON,
 		)
 	}

@@ -57,7 +57,7 @@ func (c *ConsoleWriter) log(level string, content any, caller string, fields ...
 	}
 	parts = append(parts, contentStr)
 
-	trace, span, duration, logType, userID := extractFields(fields)
+	trace, span, duration, logType, userID, username := extractFields(fields)
 	// 字段使用青色
 	fieldColor := color.New(color.FgCyan)
 	if trace != "" {
@@ -75,9 +75,12 @@ func (c *ConsoleWriter) log(level string, content any, caller string, fields ...
 	if userID != nil {
 		parts = append(parts, fieldColor.Sprint(fmt.Sprintf("user_id=%d", *userID)))
 	}
+	if username != "" {
+		parts = append(parts, fieldColor.Sprint(fmt.Sprintf("username=%s", username)))
+	}
 
 	for _, field := range fields {
-		if field.Key != "trace" && field.Key != "span" && field.Key != "duration" && field.Key != "log_type" && field.Key != "logType" && field.Key != "user_id" && field.Key != "userId" {
+		if field.Key != "trace" && field.Key != "span" && field.Key != "duration" && field.Key != "log_type" && field.Key != "logType" && field.Key != "user_id" && field.Key != "userId" && field.Key != "username" && field.Key != "userName" {
 			parts = append(parts, fieldColor.Sprint(fmt.Sprintf("%s=%v", field.Key, field.Value)))
 		}
 	}

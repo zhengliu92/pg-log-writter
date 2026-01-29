@@ -44,7 +44,7 @@ func ConvertFields(fields []FieldAccessor) map[string]interface{} {
 	for _, field := range fields {
 		key := field.GetKey()
 		// 跳过特殊字段
-		if key == "trace" || key == "span" || key == "duration" || key == "log_type" || key == "logType" || key == "user_id" || key == "userId" {
+		if key == "trace" || key == "span" || key == "duration" || key == "log_type" || key == "logType" || key == "user_id" || key == "userId" || key == "username" || key == "userName" {
 			continue
 		}
 		result[key] = field.GetValue()
@@ -76,7 +76,7 @@ func ExtractFields(fields []FieldAccessor) (trace, span, duration, logType strin
 }
 
 // extractFields 从 LogField 切片中提取特殊字段
-func extractFields(fields []LogField) (trace, span, duration, logType string, userID *int64) {
+func extractFields(fields []LogField) (trace, span, duration, logType string, userID *int64, username string) {
 	for _, field := range fields {
 		value := fmt.Sprintf("%v", field.Value)
 		switch field.Key {
@@ -92,6 +92,8 @@ func extractFields(fields []LogField) (trace, span, duration, logType string, us
 			if id, ok := toInt64(field.Value); ok {
 				userID = &id
 			}
+		case "username", "userName":
+			username = value
 		}
 	}
 	return
@@ -130,7 +132,7 @@ func convertLogFields(fields []LogField) map[string]interface{} {
 	result := make(map[string]interface{})
 	for _, field := range fields {
 		// 跳过特殊字段
-		if field.Key == "trace" || field.Key == "span" || field.Key == "duration" || field.Key == "log_type" || field.Key == "logType" || field.Key == "user_id" || field.Key == "userId" {
+		if field.Key == "trace" || field.Key == "span" || field.Key == "duration" || field.Key == "log_type" || field.Key == "logType" || field.Key == "user_id" || field.Key == "userId" || field.Key == "username" || field.Key == "userName" {
 			continue
 		}
 		result[field.Key] = field.Value
